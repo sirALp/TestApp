@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevCam</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .chart-container {
+            width: 800px;
+            height: 400px;
+            margin: 40px auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>DevCam</h1>
+    <div class="chart-container">
+        <canvas id="commitsChart"></canvas>
+    </div>
+    <div class="chart-container">
+        <canvas id="cicdChart"></canvas>
+    </div>
+    <p id="coverage"></p>
+
+    <script>
+        fetch('/api/commits')
+            .then(response => response.json())
+            .then(data => {
+                const ctx = document.getElementById('commitsChart').getContext('2d');
+                const chart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            label: 'Commits',
+                            data: data.data,
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            });
+
+          
+        fetch('/api/cicd')
+            .then(response => response.json())
+            .then(data => {
+                console.log('CI/CD payload in browser:', data);
+                const ctx = document.getElementById('cicdChart').getContext('2d');
+                const chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.dates.map(date => new Date(date).toLocaleString()),
+                        datasets: [{
+                            label: 'Duration (ms)',
+                            data: data.durations,
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            });
+
+        fetch('/api/coverage')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('coverage').innerText = `Coverage: ${data.coverage}%`;
+            });
+    </script>
+</body>
+</html>
